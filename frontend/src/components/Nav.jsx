@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { IoCartOutline } from 'react-icons/io5'
 import { FaLocationDot } from 'react-icons/fa6'
 import { FaPlus } from 'react-icons/fa6'
@@ -7,14 +7,15 @@ import { RxCross2 } from 'react-icons/rx'
 import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
 import { serverUrl } from '../App'
-import { setUserData } from '../redux/userSlice'
+import { setSearchItems, setUserData } from '../redux/userSlice'
 import { TbReceiptDollar } from 'react-icons/tb'
 import { useNavigate } from 'react-router-dom'
 const Nav = () => {
-  const { userData, CurrentCity } = useSelector(state => state.user)
+  const { userData, CurrentCity,MyOrders } = useSelector(state => state.user)
   const { myShopData } = useSelector(state => state.owner)
   const [showInfo, setShowInfo] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const [query,setQuery]=useState("")
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { CardItems } = useSelector(state => state.user)
@@ -32,6 +33,26 @@ const Nav = () => {
   const toggleInfo = () => {
     setShowInfo(prev => !prev)
   }
+
+   const handleSearchItems = async ()=>{
+     try {
+       const result = await axios.get(`${serverUrl}/api/item/search-items?query=${query}&city=${CurrentCity}`,{withCredentials:true})
+       
+       dispatch(setSearchItems(result.data))
+     } catch (error) {
+        console.log(error)
+     }
+    }
+
+    useEffect(()=>{
+      if(query){
+   handleSearchItems()
+      }
+      else{
+        dispatch(setSearchItems(null))
+      }
+    },[query])
+
   return (
     <div
       className='w-full h-[80px] flex items-center justify-between 
@@ -61,6 +82,8 @@ const Nav = () => {
           <div className='flex items-center gap-[8px] flex-1'>
             <IoMdSearch size={20} className='text-[#ff4d2d]' />
             <input
+            onChange={(e)=>setQuery(e.target.value)}
+              value={query}
               type='text'
               placeholder='search delicious food...'
               className='text-gray-700 outline-0 w-full text-sm'
@@ -81,6 +104,8 @@ const Nav = () => {
           <div className=' w-[80%] flex items-center gap-[10px] '>
             <IoMdSearch size={25} className='text-[#ff4d2d]' />
             <input
+              onChange={(e)=>setQuery(e.target.value)}
+              value={query}
               type='text'
               placeholder='search delicious food...'
               className=' px-[10px] text-gray-700 outline-0 w-full '
@@ -99,6 +124,8 @@ const Nav = () => {
             />
           ) : (
             <IoMdSearch
+            onChange={(e)=>setQuery(e.target.value)}
+              value={query}
               size={25}
               className='text-[#ff4d2d] md:hidden '
               onClick={() => setShowSearch(true)}
@@ -133,9 +160,9 @@ const Nav = () => {
             >
               <TbReceiptDollar size={20} />
               <span>My Orders</span>
-              <span className=' absolute -right-2 -top-2 text-xs fond-bold text-white bg-[#ff4d2d] rounded-full px-[6px] py-[1px]  '>
+              {/* <span className=' absolute -right-2 -top-2 text-xs fond-bold text-white bg-[#ff4d2d] rounded-full px-[6px] py-[1px]  '>
                 0
-              </span>
+              </span> */}
             </div>
 
             <div
@@ -144,9 +171,9 @@ const Nav = () => {
             >
               <TbReceiptDollar size={20} />
 
-              <span className=' absolute -right-2 -top-2 text-xs fond-bold text-white bg-[#ff4d2d] rounded-full px-[6px] py-[1px]  '>
+              {/* <span className=' absolute -right-2 -top-2 text-xs fond-bold text-white bg-[#ff4d2d] rounded-full px-[6px] py-[1px]  '>
                 0
-              </span>
+              </span> */}
             </div>
           </>
         ) : (

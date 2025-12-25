@@ -29,7 +29,7 @@ function RecenterMap ({ location }) {
 const CheckOut = () => {
   const apikey = import.meta.env.VITE_GEOAPIKEY
   const { location, address } = useSelector(state => state.map)
-  const { CardItems, TotalAmount } = useSelector(state => state.user)
+  const { CardItems, TotalAmount, userData } = useSelector(state => state.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [addressInput, setAddressInput] = useState('')
@@ -57,14 +57,12 @@ const CheckOut = () => {
   }
 
   const getCurrentLocation = () => {
-    navigator.geolocation.getCurrentPosition(async position => {
-      const latitude = position.coords.latitude
-      const longitude = position.coords.longitude
+    const latitude = userData.location.coordinates[1]
+    const longitude = userData.location.coordinates[0]
 
-      dispatch(setLocation({ lat: latitude, lon: longitude }))
+    dispatch(setLocation({ lat: latitude, lon: longitude }))
 
-      getAddressByLatLng(latitude, longitude)
-    })
+    getAddressByLatLng(latitude, longitude)
   }
 
   const getLatLngByAddress = async () => {
@@ -81,29 +79,69 @@ const CheckOut = () => {
     }
   }
 
-    const handlePlaceOrder = async () => {
-  try {
-    const result = await axios.post(
-      `${serverUrl}/api/order/place-order`,
-      {
-        cartItems: CardItems,        
-        paymentMethod,
-        deliveryAddress: {
-          text: addressInput,
-          latitude: location.lat,
-          longitude: location.lon
+  const handlePlaceOrder = async () => {
+    try {
+      const result = await axios.post(
+        `${serverUrl}/api/order/place-order`,
+        {
+          cartItems: CardItems,
+          paymentMethod,
+          deliveryAddress: {
+            text: addressInput,
+            latitude: location.lat,
+            longitude: location.lon
+          },
+          totalAmount: AmountWithDeliveryFee
         },
-        totalAmount: TotalAmount     
-      },
-      { withCredentials: true }
-    )
+        { withCredentials: true }
+      )
 
-    dispatch(addMyOrder(result.data))
-    navigate('/order-placed')
-  } catch (error) {
-    console.log("Error in placing order:", error)
+      if (paymentMethod == 'cod') {
+        dispatch(addMyOrder(result.data))
+        navigate('/order-placed')
+      }
+      else{
+        const orderId = result.data.orderId
+      const razorOrder= result.data.razorOrder
+        openRazorPayWindow(orderId,razorOrder)
+      }
+    } catch (error) {
+      console.log('Error in placing order:', error)
+    }
   }
-}
+
+  const openRazorPayWindow = (orderId, razorOrder) => {
+  const options = {
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+    amount: razorOrder.amount,
+    currency: razorOrder.currency,
+    name: "EatZilla",
+    description: "Food Delivery Website",
+    order_id: razorOrder.id,
+
+    handler: async function (response) {
+      try {
+        const result = await axios.post(
+          `${serverUrl}/api/order/verify-payment`,
+          {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id, // ✅ MISSING LINE (MAIN FIX)
+            orderId
+          },
+          { withCredentials: true }
+        );
+
+        dispatch(addMyOrder(result.data));
+        navigate("/order-placed");
+      } catch (error) {
+        console.log("Error in verifying payment:", error);
+      }
+    }
+  };
+
+  const rzp = new window.Razorpay(options);
+  rzp.open();
+};
 
 
   useEffect(() => {
@@ -259,9 +297,10 @@ const CheckOut = () => {
             </div>
           </div>
         </section>
-        <button 
-        onClick={handlePlaceOrder}
-        className=' cursor-pointer w-full bg-[#ff4d2d] hover:bg-[#e64526] text-white py-3 rounded-xl font-semibold'>
+        <button
+          onClick={handlePlaceOrder}
+          className=' cursor-pointer w-full bg-[#ff4d2d] hover:bg-[#e64526] text-white py-3 rounded-xl font-semibold'
+        >
           {paymentMethod === 'cod' ? 'Place Order' : 'Pay & Place Order'}
         </button>
       </div>

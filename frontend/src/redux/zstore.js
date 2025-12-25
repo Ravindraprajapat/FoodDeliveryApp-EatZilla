@@ -7,5 +7,6 @@ import mapSlice from "./mapSlice"
         user:userSlice,
         owner:ownerSlice,
         map:mapSlice,
-    }
+    },
+   
  })

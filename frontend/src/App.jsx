@@ -7,7 +7,7 @@ import ZsignUp from './pages/ZsignUp'
 import ZsignIn from './pages/ZsignIn'
 import ForgetPassword from './pages/ForgetPassword'
 import UseGetCurrentUser from './hooks/UseGetCurrentUser'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import Home from './pages/Home'
 import UseGetCity from './hooks/UseGetCity'
 import UseGetMyShop from './hooks/UseGetMyShop'
@@ -22,19 +22,53 @@ import OrderPlaced from './pages/OrderPlaced'
 import MyOrders from './pages/MyOrders'
 import UseGetMyOrders from './hooks/UseGetMyOrders'
 import UseUpdateLocation from './hooks/UseUpdateLocation'
+import TrackOrderPage from './pages/TrackOrderPage'
+import Shop from './pages/Shop'
+import { useEffect } from 'react'
+
+import { initSocket, disconnectSocket } from '../socket.js'
 
 export const serverUrl = 'http://localhost:8000'
 
 function App () {
+  // const dispatch = useDispatch()
+  //  const socket = useSelector((state) => state.user.socket);
+const { userData } = useSelector(state => state.user)
   UseGetCurrentUser()
-  UseUpdateLocation();
+  UseUpdateLocation()
   UseGetCity()
   UseGetMyShop()
-  UseGetShopByCity();
-  UseGetItemByCity();
-  UseGetMyOrders();
+  UseGetShopByCity()
+  UseGetItemByCity()
+  UseGetMyOrders()
+
+  useEffect(() => {
+    const socket = initSocket(serverUrl)
+
+    socket.on('connect', () => {
+      console.log('Socket connected:', socket.id)
+      
+      if(userData){
+        socket.emit('identity', { userId: userData._id });
+      }
+
+    })
+
+    
+
+    return () => {
+      disconnectSocket()
+    }
+  }, [userData?._id])
+  // useEffect(()=>{
+  //  const socketInstance = io(serverUrl,{withCredentials:true})
+  //  dispatch(setSocket(socketInstance))
+  //  socketInstance.on('connect',(socket)=>{
+  //   console.log(socket)
+  //  })
+  // },[])
+
   
-  const { userData } = useSelector(state => state.user)
   return (
     <Routes>
       <Route
@@ -80,6 +114,15 @@ function App () {
       <Route
         path='/my-orders'
         element={userData ? <MyOrders /> : <Navigate to={'/signin'} />}
+      />
+
+      <Route
+        path='/track-order/:orderId'
+        element={userData ? <TrackOrderPage /> : <Navigate to={'/signin'} />}
+      />
+      <Route
+        path='/shop/:shopId'
+        element={userData ? <Shop /> : <Navigate to={'/signin'} />}
       />
     </Routes>
   )

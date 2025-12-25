@@ -57,7 +57,7 @@ const FoodCard = ({data}) => {
     </div>
     <div className=" flex items-center justify-between mt-auto p-3 ">
       <span className="font bold text-gray-900 text-lg">
-        {data.price}
+        ₹{data.price}
       </span>
       <div className="flex items-center border rounded-full overflow-hidden shadow-sm ">
          <button className="px-2 py-1 hover:bg-gray-100 transition" onClick={handleDecrease}>
