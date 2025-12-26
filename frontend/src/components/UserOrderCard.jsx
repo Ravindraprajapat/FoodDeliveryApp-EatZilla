@@ -33,9 +33,16 @@ const UserOrderCard = ({ data }) => {
     }   
     }
   
-
-
-
+  const handleDownloadInvoice = async (orderId) => {
+  try {
+    window.open(
+      `${serverUrl}/api/order/download-invoice/${orderId}`,
+      "_blank"
+    )
+  } catch (error) {
+    console.log("Invoice download error", error)
+  }
+}
   return (
     <div className='bg-white rounded-lg shadow p-4 space-y-4'>
       {/* Header */}
@@ -118,7 +125,13 @@ const UserOrderCard = ({ data }) => {
          className='bg-[#ff4d2d] hover:bg-[#e64526] text-white px-4 py-2 rounded-lg text-sm cursor-pointer'>
           Track Order
         </button>
+        
       </div>
+      <button
+        onClick={() => handleDownloadInvoice(data._id)}
+         className=' flex items-end  bg-[#ff4d2d] hover:bg-[#e64526] text-white px-4 py-2 rounded-lg text-sm cursor-pointer'>
+          Download Invoice
+        </button>
     </div>
   )
 }

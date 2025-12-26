@@ -1,6 +1,6 @@
 import express from "express"
 import isAuth from "../middleware/isAuth.js";
-import {  acceptOrder, getCurrentOrder, getDeliveryBoyAssignment, getMyOrders, getOrderById, getTodayDelivery, placeOrder, sendDeliveryOtp, updateOrderStatus, verifyDeliveryOtp, verifyPayment } from "../controllers/orderContorller.js";
+import {  acceptOrder, downloadInvoice, getCurrentOrder, getDeliveryBoyAssignment, getMyOrders, getOrderById, getTodayDelivery, placeOrder, sendDeliveryOtp, updateOrderStatus, verifyDeliveryOtp, verifyPayment } from "../controllers/orderContorller.js";
 
  export const orderRouter = express.Router();
 
@@ -15,3 +15,4 @@ orderRouter.get("/accept-order/:assignmentId",isAuth,acceptOrder)
 orderRouter.get("/get-current-order",isAuth,getCurrentOrder)
 orderRouter.get("/get-order-by-id/:orderId",isAuth,getOrderById)
 orderRouter.get("/get-today-deliveries/",isAuth,getTodayDelivery)
+orderRouter.get("/download-invoice/:orderId",isAuth,downloadInvoice)

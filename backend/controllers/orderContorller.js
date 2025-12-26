@@ -785,6 +785,74 @@ export const getTodayDelivery = async (req, res) => {
 }
 
 
+import PDFDocument from "pdfkit"
+export const downloadInvoice = async (req, res) => {
+  try {
+    const { orderId } = req.params
+
+    const order = await Order.findById(orderId)
+      .populate("user")
+      .populate("shopOrders.shop")
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" })
+    }
+
+    // ✅ browser ko bata rahe hain PDF download hoga
+    res.setHeader("Content-Type", "application/pdf")
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=invoice-${order._id}.pdf`
+    )
+
+    const doc = new PDFDocument({ margin: 40 })
+
+    // ✅ PDF directly response me pipe
+    doc.pipe(res)
+
+    // ---------- PDF CONTENT ----------
+    doc.fontSize(20).text("EatZilla Invoice", { align: "center" })
+    doc.moveDown()
+
+    doc.fontSize(12)
+    doc.text(`Customer: ${order.user.fullName}`)
+    doc.text(`Email: ${order.user.email}`)
+    doc.text(`Order ID: ${order._id}`)
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`)
+    doc.moveDown()
+
+    let total = 0
+
+    order.shopOrders.forEach(so => {
+      doc.fontSize(14).text(`Shop: ${so.shop.name}`)
+      doc.moveDown(0.5)
+
+      so.shopOrderItems.forEach(item => {
+        const price = item.price * item.quantity
+        total += price
+        doc.fontSize(11).text(
+          `${item.name} x${item.quantity}  ₹${price}`
+        )
+      })
+
+      doc.moveDown()
+    })
+
+    doc.fontSize(14).text(`Total Amount: ₹${total}`, { align: "right" })
+    doc.moveDown()
+    doc.fontSize(10).text("Thank you for ordering ❤️", {
+      align: "center"
+    })
+
+    // ✅ PDF finish
+    doc.end()
+
+  } catch (error) {
+    res.status(500).json({ message: "Invoice error", error: error.message })
+  }
+}
+
+
 
 // export const updateOrderStatus = async (req, res) => {
 //   try {

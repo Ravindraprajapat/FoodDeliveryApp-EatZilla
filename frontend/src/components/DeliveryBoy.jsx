@@ -366,6 +366,7 @@ const DeliveryBoy = () => {
                     {currentOrder.user.fullName}
                   </span>
                 </p>
+                <p className='text-sm text-gray-500 mb-1' >Otp valid for 5 Minuets</p>
                 <input
                   type='text'
                   placeholder='Enter a Otp'
@@ -377,7 +378,7 @@ const DeliveryBoy = () => {
                 
                 <button
                   onClick={verifyOtp}
-                  className='w-full bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition-all'
+                  className='w-full bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition-all cursor-pointer'
                 >
                   Submit OTP
                 </button>

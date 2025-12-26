@@ -16,27 +16,33 @@ const UserDashboard = () => {
   const cateScrollRef = useRef(null)
   const shopScrollRef = useRef(null)
   const navigate = useNavigate()
+
   const [showLeftCate, setShowLeftCate] = useState(false)
   const [showRightCate, setShowRightCate] = useState(false)
   const [showLeftShop, setShowLeftShop] = useState(false)
   const [showRightShop, setShowRightShop] = useState(false)
 
-  // ✅ FILTERED ITEMS STATE
-  const [updatedItemList, setUpdatedItemList] = useState(ItemsInMyCity)
+  // ✅ FIX: all shops items state
+  const [updatedItemList, setUpdatedItemList] = useState([])
 
-  // ✅ INITIAL LOAD ITEMS
+  // ✅ FIX: collect items from ALL shops
   useEffect(() => {
-    if (ItemsInMyCity?.length) {
-      setUpdatedItemList(ItemsInMyCity)
+    if (ShopsInMyCity?.length) {
+      const allItems = ShopsInMyCity.flatMap(shop => shop.items || [])
+      setUpdatedItemList(allItems)
     }
-  }, [ItemsInMyCity])
+  }, [ShopsInMyCity])
 
-  // ✅ CATEGORY FILTER FUNCTION
+  // ✅ FIX: category filter on ALL items
   const handleFilterByCategory = category => {
+    const allItems = ShopsInMyCity.flatMap(shop => shop.items || [])
+
     if (category === 'All') {
-      setUpdatedItemList(ItemsInMyCity)
+      setUpdatedItemList(allItems)
     } else {
-      const filtered = ItemsInMyCity.filter(item => item.category === category)
+      const filtered = allItems.filter(
+        item => item.category === category
+      )
       setUpdatedItemList(filtered)
     }
   }
@@ -81,18 +87,22 @@ const UserDashboard = () => {
   return (
     <div className='w-screen min-h-screen flex flex-col gap-5 items-center bg-[#fff9f6] overflow-auto'>
       <Nav />
+
+      {/* ================= SEARCH RESULT ================= */}
       {searchItems && searchItems.length > 0 && (
         <div className='w-full max-w-6xl flex flex-col gap-5 items-start p-5 bg-white shadow-md rounded-2xl mt-4'>
           <h1 className='text-gray-900 text-2xl sm:text-3xl font-semibold border-b border-gray-200 pb-2'>
             Search Results
           </h1>
+
           <div className='w-full h-auto flex flex-wrap gap-6 justify-center'>
-            {searchItems.map((item)=>(
-              <FoodCard data={item} key={item._id}/>
+            {searchItems.map(item => (
+              <FoodCard data={item} key={item._id} />
             ))}
           </div>
         </div>
       )}
+
       {/* ================= CATEGORY SECTION ================= */}
       <div className='w-full max-w-6xl flex flex-col gap-5 p-[10px]'>
         <h1 className='text-gray-800 text-2xl sm:text-3xl'>
@@ -160,7 +170,9 @@ const UserDashboard = () => {
 
         <div className='w-full flex flex-wrap gap-[20px] justify-center'>
           {updatedItemList?.length > 0 ? (
-            updatedItemList.map(item => <FoodCard key={item._id} data={item} />)
+            updatedItemList.map(item => (
+              <FoodCard key={item._id} data={item} />
+            ))
           ) : (
             <p className='text-gray-500'>No items found</p>
           )}
@@ -171,6 +183,7 @@ const UserDashboard = () => {
 }
 
 export default UserDashboard
+
 
 // import React, { useEffect, useRef, useState } from 'react'
 // import Nav from './Nav'

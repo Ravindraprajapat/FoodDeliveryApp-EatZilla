@@ -44,14 +44,14 @@ const shopOrderSchema = new mongoose.Schema(
     },
     deliveryOtp: {
       type: String,
-      default:null
+      default: null
     },
-    otpExpires:{
+    otpExpires: {
       type: Date
     },
-    deliveredAt:{
+    deliveredAt: {
       type: Date,
-      default:null
+      default: null
     }
   },
   { timestamps: true }
@@ -79,19 +79,19 @@ const orderSchema = new mongoose.Schema(
       required: true
     },
     shopOrders: [shopOrderSchema],
-    payment:{
-      type:Boolean,
-      default:false,
+    payment: {
+      type: Boolean,
+      default: false
     },
-    razorPayOrderId:{
-      type:String,
-      default:""
+    razorPayOrderId: {
+      type: String,
+      default: ''
     },
-    razorPayPaymentId:{
-      type:String,
-      default:""
+    razorPayPaymentId: {
+      type: String,
+      default: ''
     },
-  
+    
   },
   { timestamps: true }
 )
